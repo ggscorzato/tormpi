@@ -1,0 +1,2 @@
+source atnsetup.conf
+atnsub -n ${NDIMX}x${NDIMY}x${NDIMZ} --tormpi --walltime=07:30:00  -s qscript.sh

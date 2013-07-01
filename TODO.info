@@ -1,0 +1,15 @@
+- todo [priority]
+
+- test on other codes (MILC, gromacs, NAMD, espresso, VASP... ?) [high]
+- tormpi_sendrecv_init and consequently adapt tormpi_start [high, but complex]
+- set up repository [high]
+- option to skip packing if needed [high]
+- implement allreduce [high]
+- implement broadcast [moderate]
+- implement isend irecv, assuming that they are coupled in opposite directions (or only for small packets ?!?) [moderate]
+- better compatibility with MPI_Waitany(some)/MPI_Test*/MPI_Cancel/MPI_Request*/MPI_Grequest*/MPI_File [low]
+- deal with status of Recv's (set consistently to MPI_STATUS_IGNORE) [low]
+- check if intelMPI does the same choice rank-coordinates as openmpi [low]
+- check the tags in some safety mode. [low]
+
+

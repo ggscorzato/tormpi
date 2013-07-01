@@ -1,0 +1,61 @@
+This library provides a thin interface between the atn_ primitives
+and a farely typical (but far from general) MPI code.  Features are:
+
+ADAPTING AND COMPILING THE APPLICATION
+
+- See README.COMPILE in the examples_for_user directory
+
+
+RUN THE APPLICATION
+
+- See README.RUN in the examples_for_user directory
+
+
+RATIONALE 
+
+- All the "local" functions are left to MPI (e.g. setting up the
+topology and the neighbors and possibly other utilities). A few MPI_
+routines are substituted by tormpi_ routines.  In particular,
+tormpi_Init does all the inits and set up a LUT to record which
+processes are reachable through the atn_ network and which are not.
+tormpi_Send/Recv and similar p2p routines either do the communications
+via atn_ or fall back to MPI_ versions depending on the LUT.
+
+LIMITATIONS 
+
+- topologies created by MPI_Cart_create or others must be compatible
+with the one specified in the atnsetup.conf.
+
+- Only very short (<64KB) communications can be done with MPI_Send,
+MPI_Recv, MPI_Isend, MPI_Irecv. In general the communicatins can be
+done with MPI_Sendrecv, MPI_Isendrecv, MPI_Send_init, MPI_Recv_init
+
+- requires openmpi with support for rankfile (v1.3 or later) and
+assumes the relation between ranks and cartesian coordinates implicit
+in openmpi (base topology).
+
+- tags are ignored: the sends and recv must be posted in order foreach
+link and core.
+
+- recv's status is ignored
+
+- MPI_Waitany, MPI_Waitsome, MPI_Testany, MPI_Testall, MPI_Request_*,
+MPI_Cancel, MPI_Grequest_*, MPI_File_* are not supported when they
+deal with requests routed vie the torus.
+
+- ??
+
+RECOMPILING THE TORMPI LIBRARY
+
+- specify the system specific variables in the Makefile, in
+particular the location of the mpi.h file and the libatn.a library
+
+- inside the tormpi directory execute make.
+
+
+FURTHER FUNCTIONS FOR OPTIMISATIONS
+
+if your code uses nearest neigh communications ONLY, you may want to:
+- Insert in your code tormpi_neigh_comm_only=1; immmediately before MPI_Init(). 
+[work in progress: at the moment it must be changed inside tormpi_init and recompiled]
+- Adapt and run the parser neigh_only_parser.sh, as described there.

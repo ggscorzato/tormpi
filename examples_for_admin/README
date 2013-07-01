@@ -1,0 +1,8 @@
+- rankfile_generate -[for queue administrators] The administrator of
+the queue system should make sure that this file is used to produce a
+rankfile.
+
+- tormpi_parser.sh - [optional, for users at compilation] It can be
+used (after adaptation), before compilation, in the source code to
+substitute MPI_Isend() & MPI_Irecv with MPI_isendrecv or to substitute
+variables identifying neighbours by rank with tormpi_neigh

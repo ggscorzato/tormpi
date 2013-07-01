@@ -1,0 +1,23 @@
+example to submit a tormpi job to the queue system:
+
+1. adapt atnsetup.conf: 
+MPINDIMS= cartesian dimentions of the mpi job.
+NDIMX (Y,Z) = number of boards to be used in HW direction X (Y,Z)
+
+IW=J   The SW direction J (=0...MPIDIMS-1) is distributed along the HW direction IW (W=X,Y,Z)
+
+LDIMJ = number of cores in the SW direction J within a single board.
+
+NDIMS (T) ignore
+ORDER ignore
+
+The atnsetup.conf file in this directory requires a partition of 4x2x1
+boards and creates a local (in each board) grid L0xL1xL2xL3 = 1 x 2 x
+3 x 1.  Since the SW direction 0 (1,2) is distributed along the HW dir
+Y (X,Z), the global MPI grid is: [dims(0),dim(1),dim(2)dim(3)]=[2,2*2,3,1]
+
+
+2. adapt the script qscript.sh to your needs
+
+3. execute ./qcommand from the directory where your program,
+atnsetup.conf, qscript.sh are.

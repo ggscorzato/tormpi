@@ -1,0 +1,14 @@
+ADAPTING AND COMPILING THE APPLICATION
+
+- The application needs to compile with openmpi v1.3 or later.  It is
+necessary to include the header tormpi_export.h
+
+- the compiled application code should be linked to the openmpi (v1.3
+or later), the tormpi (this one) and the AURORA torus network
+libraries (libatn).  Example of compilation with linking is:
+
+>mpicc -o $YOUREXE $YOURCODE -I$TORMPI_INCLUDE -I$ATN_INCLUDE -L$ATN_LIB -L$TORMPI_LIB -ltormpi_noproxy -latn -ltr
+
+- if more than one MPI process per board is used, the application should be compiled with the proxy:
+
+>mpicc -o $YOUREXE $YOURCODE -I$TORMPI_INCLUDE -I$PROXY_INCLUDE -I$ATN_INCLUDE -L$ATN_LIB -L$PROXY_LIB  -L$TORMPI_LIB -ltormpi_proxy ${proxylibany} -latn -ltr

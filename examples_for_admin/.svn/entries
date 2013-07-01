@@ -1,0 +1,53 @@
+8
+
+dir
+1
+svn+ssh://193.205.194.78/opt/aurora/svn/tormpi/trunk/examples_for_admin
+svn+ssh://193.205.194.78/opt/aurora/svn/tormpi
+
+
+
+2010-10-30T12:56:22.315804Z
+1
+root
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+27dd8a83-a29f-4f39-aa58-3b7ec308930a
+
+rankfile_generate
+file
+
+
+
+
+2010-10-30T13:39:27.000000Z
+10bf30cf18735d32c7287c38f0d48157
+2010-10-30T12:56:22.315804Z
+1
+root
+has-props
+
+README
+file
+
+
+
+
+2010-10-30T13:39:27.000000Z
+38c4b8e00d6eddcc9bbc59bdd9c6c79a
+2010-10-30T12:56:22.315804Z
+1
+root
+

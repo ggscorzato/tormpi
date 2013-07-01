@@ -1,0 +1,166 @@
+# This file should be run by the queue system in the 'prologue' stage (as used e.g. in PBS-Torque) and is
+# responsible of creating the rankfile's and hostfile's
+#
+# The user chooses (via $PBS_WORKDIR/atnsetup.conf)
+# 1. a triple (NDIMX,NDIMY,NDIMZ) defining the dimensions of one of the available HW tori
+# 2. a triple (IX,IY,IZ) that maps the HW direction W(=X,Y,Z) to the MPI dimension IW.
+# 3. the organization of the cores into the node (=board). i.e. an array LDIM0...LDIM4 such that:
+#    \prod_i LDIMi = $CORES_PER_NODE; dims(IW)=NW*LDIMIW; dims(i)=LDIMi (for i!=IX,IY,IZ)
+#    This is compatible with MPI parallelizations up to 5 non trivial dimensions.
+#
+# The queue system returns a queue PBS_QUEUE, PBS_WORKDI, otherwise set here by hand:
+# atnsub should define the location of AURORA_HOSTFILE and AURLRA_RANKFILE, otherwise set by hand
+
+# clean up
+# AURORA_HOSTFILE=hostfile
+# AURORA_RANKFILE=rankfile
+rm -f $AURORA_RANKFILE $AURORA_HOSTFILE $AURORA_RANKFILE.proxy
+
+# read atnsetup.conf from PBS_O_WORKDIR
+# PBS_O_WORKDIR=.
+source $PBS_O_WORKDIR/atnsetup.conf # user defined (NDIMX,NDIMY,NDIMZ), (IX,IY,IZ), LDIM0..LDIM4  are here
+
+# get the hosts from PBS_QUEUE (or atnsetup.conf)
+# STARTNODE=$1
+# PBS_QUEUE=eq_${NDIMX}x${NDIMY}x${NDIMZ}_${STARTNODE}
+PART=$(echo $PBS_QUEUE | sed 's/eq_//')
+PART_CONF_PATH=/opt/aurora/etc/partitions/active
+cat $PART_CONF_PATH/$PART.conf | awk {'print $1'} > temp_hostfile
+
+mm=0
+for node in `cat temp_hostfile`; do
+ nodes[$mm]=$node
+ ((mm++))
+done
+rm -f temp_hostfile
+
+N0=1;N1=1;N2=1;N3=1;N4=1;
+eval N${IX}=${NDIMX}
+eval N${IY}=${NDIMY}
+eval N${IZ}=${NDIMZ}
+
+SLOTS=$(( ${LDIM0} * ${LDIM1} * ${LDIM2} * ${LDIM3} ))
+
+
+if [ $SLOTS == 1 ]; then
+APP[0]="0:0,1:0,0:1,1:1,0:2,1:2,0:3,1:3,0:4,1:4,0:5,1:5"
+fi
+if [ $SLOTS == 2 ]; then
+APP[0]="0:0,0:1,0:2,0:3,0:4,0:5"
+APP[1]="1:0,1:1,1:2,1:3,1:4,1:5"
+fi
+if [ $SLOTS == 3 ]; then
+APP[0]="0:0,0:1,0:2,0:3"
+APP[1]="0:4,0:5,1:0,1:1"
+APP[2]="1:2,1:3,1:4,1:5"
+fi
+if [ $SLOTS == 4 ]; then
+APP[0]="0:0,0:1,0:2"
+APP[1]="0:3,0:4,0:5"
+APP[2]="1:0,1:1,1:2"
+APP[3]="1:3,1:4,1:5"
+fi
+if [ $SLOTS == 6 ]; then
+APP[0]="0:0,0:1"
+APP[1]="0:2,0:3"
+APP[2]="0:4,0:5"
+APP[3]="1:0,1:1"
+APP[4]="1:2,1:3"
+APP[5]="1:4,1:5"
+fi
+if [ $SLOTS == 8 ]; then
+APP[0]="0:0,0:4"
+APP[1]="0:1,0:5"
+APP[2]="0:2"
+APP[3]="0:3"
+APP[4]="1:0,1:4"
+APP[5]="1:1,1:5"
+APP[6]="1:2"
+APP[7]="1:3"
+fi
+if [ $SLOTS == 10 ]; then
+APP[0]="0:0,0:5"
+APP[1]="0:1"
+APP[2]="0:2"
+APP[3]="0:3"
+APP[4]="0:4"
+APP[5]="1:0,1:5"
+APP[6]="1:1"
+APP[7]="1:2"
+APP[8]="1:3"
+APP[9]="1:4"
+fi
+if [ $SLOTS == 12 ]; then
+APP[0]="0:0"
+APP[1]="0:1"
+APP[2]="0:2"
+APP[3]="0:3"
+APP[4]="0:4"
+APP[5]="0:5"
+APP[6]="1:0"
+APP[7]="1:1"
+APP[8]="1:2"
+APP[9]="1:3"
+APP[10]="1:4"
+APP[11]="1:5"
+fi
+
+
+ll=0
+mm=0
+pp=0
+inone=0
+
+# this loop is choosen in order to match the relation between ranks and coords taken in openmpi:
+# rank = coords(0) x dims(1) x...x dims(ndims-1) + coords(1) x dims(2) x...x dims(ndims-1) +...+ coords(ndims-1)
+# see mca_topo_base_cart_create
+
+for(( i0=0 ; i0<N0 ; i0++ )) do
+ for(( j0=0 ; j0<LDIM0 ; j0++ )) do
+  for(( i1=0 ; i1<N1 ; i1++ )) do
+   for(( j1=0 ; j1<LDIM1 ; j1++ )) do
+    for(( i2=0 ; i2<N2 ; i2++ )) do
+     for(( j2=0 ; j2<LDIM2 ; j2++ )) do
+      for(( i3=0 ; i3<N3 ; i3++ )) do
+       for(( j3=0 ; j3<LDIM3 ; j3++ )) do
+        for(( i4=0 ; i4<N4 ; i4++ )) do
+         for(( j4=0 ; j4<LDIM4 ; j4++ )) do
+	  iX=i${IX}
+	  iY=i${IY}
+	  iZ=i${IZ}
+
+	  MX=$(( $PX + $iX ))
+	  MY=$(( $PY + $iY ))
+	  MZ=$(( $PZ + $iZ ))
+	  jj=$(( $j0 * $LDIM1 * $LDIM2 * $LDIM3 * $LDIM4 + $j1 * $LDIM2 * $LDIM3 * $LDIM4 + $j2 * $LDIM3 * $LDIM4 + $j3 * $LDIM4 + $j4 ))
+	  mm=$(( $iX  + $NDIMX * $iY + $NDIMX * $NDIMY * $iZ ))
+	  h0=$(( ${i0} * ${LDIM0} + ${j0} ))
+	  h1=$(( ${i1} * ${LDIM1} + ${j1} ))
+	  h2=$(( ${i2} * ${LDIM2} + ${j2} ))
+	  h3=$(( ${i3} * ${LDIM3} + ${j3} ))
+	  echo "rank ${ll}=${nodes[$mm]} slot=${APP[jj]}" >> $AURORA_RANKFILE
+#	  echo "rank ${ll}=${nodes[$mm]}  slot=${jj} - [$MX,$MY,$MZ] - (${h0},${h1},${h2},${h3}) " >> rankfile.info   #  print also the coordinates for clarity
+
+	  if [ $jj == 0 ]; then
+	      jp=$(( $SLOTS - 2 ))
+	      echo "${nodes[$mm]} slots=${SLOTS}" >> $AURORA_HOSTFILE
+	      echo "rank ${pp}=${nodes[$mm]} slot=$jp" >> $AURORA_RANKFILE.proxy
+	      ((pp++))
+	  fi
+
+	  ((ll++))
+         done
+        done
+       done
+      done
+     done
+    done
+   done
+  done
+ done
+done
+
+
+cp $AURORA_HOSTFILE $AURORA_HOSTFILE.proxy
+cp $AURORA_RANKFILE $PBS_O_WORKDIR/rankfile
+NP=$ll
